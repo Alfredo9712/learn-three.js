@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "jsm/controls/OrbitControls.js";
-
+import { getFresnelMat } from "./src/getFresnelMat.js";
 import getStarField from "./src/getStarfield.js";
 
 const w = window.innerWidth;
@@ -36,6 +36,19 @@ const lightsMat = new THREE.MeshBasicMaterial({
 const lightsMesh = new THREE.Mesh(geometry, lightsMat);
 earthGroup.add(lightsMesh);
 
+const cloudsMat = new THREE.MeshStandardMaterial({
+  map: loader.load("./textures/05_earthcloudmaptrans.jpg"),
+  blending: THREE.AdditiveBlending,
+});
+const cloudsMesh = new THREE.Mesh(geometry, cloudsMat);
+cloudsMesh.scale.setScalar(1.002);
+earthGroup.add(cloudsMesh);
+
+const fresnelMat = getFresnelMat();
+const atmosphereMesh = new THREE.Mesh(geometry, fresnelMat);
+atmosphereMesh.scale.setScalar(1.006);
+earthGroup.add(atmosphereMesh);
+
 const stars = getStarField({ numStars: 2500 });
 scene.add(stars);
 
@@ -48,6 +61,15 @@ const animate = () => {
 
   earthMesh.rotation.y += 0.002;
   lightsMesh.rotation.y += 0.002;
+  cloudsMesh.rotation.y += 0.0023;
+  atmosphereMesh.rotation.y += 0.002;
   renderer.render(scene, camera);
 };
 animate();
+
+function handleWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener("resize", handleWindowResize, false);
